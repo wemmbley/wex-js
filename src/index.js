@@ -3,10 +3,12 @@ import { shareState } from './shared-state.js'
 import { createAsyncComponent } from './async.js'
 import { createRouter } from './router.js'
 import { createWire, $wire } from './wire'
+import { setupModal } from './modal.js'  // директива регистрируется сразу при импорте
 
 // use in browser
 if (typeof jQuery !== 'undefined') {
   useJQuery(jQuery)
+  setupModal(jQuery)  // патчим $.fn.modal когда $ уже готов
 }
 
 export {

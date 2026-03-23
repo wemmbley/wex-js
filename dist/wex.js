@@ -131,15 +131,18 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "$wire", function() { return _wire__WEBPACK_IMPORTED_MODULE_4__["a"]; });
 
+/* harmony import */ var _modal_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(22);
 
 
 
 
 
+ // директива регистрируется сразу при импорте
 
 // use in browser
 if (typeof jQuery !== 'undefined') {
   Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* useJQuery */ "e"])(jQuery);
+  Object(_modal_js__WEBPACK_IMPORTED_MODULE_5__[/* setupModal */ "a"])(jQuery); // патчим $.fn.modal когда $ уже готов
 }
 
 if (typeof window !== 'undefined') {
@@ -7732,6 +7735,160 @@ function createWire(options) {
 }
 var $wire = createWire();
 
+
+/***/ }),
+/* 22 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return setupModal; });
+/* harmony import */ var _wex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+/**
+ * modal.js
+ * Bootstrap 5 modal integration — часть Wex-стека.
+ *
+ * Импортируется как side-effect в index.js:
+ *   import './modal.js'
+ *
+ * Не использует window.$ напрямую — регистрирует директиву через
+ * тот же directive() что и весь стек, а $.fn.modal патчится внутри
+ * useJQuery() через хук который мы сюда экспортируем.
+ */
+
+
+
+// ─── $.fn.modal патчится при вызове useJQuery ─────────────────────────────
+// Экспортируем функцию-установщик. index.js передаёт её в useJQuery
+// или вызывает вручную после useJQuery(jQuery).
+// Смотри index.js — там: setupModal($)
+
+function setupModal($) {
+  if (!$) return;
+  $.fn.modal = function (action, options) {
+    return this.each(function () {
+      var _getInstance, _getInstance2, _getInstance3, _getInstance4;
+      var el = this;
+      var bs = window.bootstrap;
+      if (!bs) {
+        console.warn('[wex-modal] Bootstrap 5 не найден — $.fn.modal не работает');
+        return;
+      }
+      var getInstance = function getInstance() {
+        return bs.Modal.getInstance(el);
+      };
+      var getOrCreate = function getOrCreate(opts) {
+        return getInstance() || new bs.Modal(el, opts || {});
+      };
+      if (_typeof(action) === 'object' || action === undefined) {
+        getOrCreate(action);
+        return;
+      }
+      switch (action) {
+        case 'show':
+          getOrCreate(options).show();
+          break;
+        case 'hide':
+          (_getInstance = getInstance()) === null || _getInstance === void 0 || _getInstance.hide();
+          break;
+        case 'toggle':
+          el.classList.contains('show') ? (_getInstance2 = getInstance()) === null || _getInstance2 === void 0 ? void 0 : _getInstance2.hide() : getOrCreate(options).show();
+          break;
+        case 'handleUpdate':
+          (_getInstance3 = getInstance()) === null || _getInstance3 === void 0 || _getInstance3.handleUpdate();
+          break;
+        case 'dispose':
+          (_getInstance4 = getInstance()) === null || _getInstance4 === void 0 || _getInstance4.dispose();
+          break;
+        default:
+          console.warn("[wex-modal] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 action: \"".concat(action, "\""));
+      }
+    });
+  };
+}
+
+// ─── Директива w-modal ────────────────────────────────────────────────────
+// Регистрируется сразу при импорте модуля — directive() не требует $,
+// он просто пишет в globalDirectives массив внутри wex.js
+
+Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* directive */ "c"])('w-modal', null, function ($el, attrs) {
+  var modalKey = attrs['w-modal'];
+  var scope = this.scope,
+    view = this.view;
+
+  // ── guard ────────────────────────────────────────────────────────────
+  var rawState = scope.data;
+  if (!rawState || !('modal' in rawState)) {
+    console.error("[wex-modal] \u0411\u0440\u043E, \u0432\u0441\u0451 \u0445\u043E\u0440\u043E\u0448\u043E \u2014 \u0442\u044B \u043F\u0440\u043E\u0441\u0442\u043E \u043A\u043E\u0435-\u0447\u0442\u043E \u0437\u0430\u0431\u044B\u043B!\n" + "\u0414\u043E\u0431\u0430\u0432\u044C \u043F\u043E\u043B\u0435 \"modal\" \u0432 \u0441\u0442\u0435\u0439\u0442 \u0438 \u0432\u043D\u0443\u0442\u0440\u0438 \u043D\u0435\u0433\u043E \u043A\u043B\u044E\u0447 \"".concat(modalKey, "\":\n\n") + "  .state({\n" + "    modal: {\n" + "      ".concat(modalKey, ": false,\n") + "    }\n" + "  })");
+    return;
+  }
+  if (!(modalKey in rawState.modal)) {
+    console.error("[wex-modal] \u0411\u0440\u043E, \u0432\u0441\u0451 \u0445\u043E\u0440\u043E\u0448\u043E \u2014 \u0442\u044B \u043F\u0440\u043E\u0441\u0442\u043E \u043A\u043E\u0435-\u0447\u0442\u043E \u0437\u0430\u0431\u044B\u043B!\n" + "\u041F\u043E\u043B\u0435 \"modal\" \u0435\u0441\u0442\u044C, \u043D\u043E \u0432 \u043D\u0451\u043C \u043D\u0435\u0442 \u043A\u043B\u044E\u0447\u0430 \"".concat(modalKey, "\":\n\n") + "  .state({\n" + "    modal: {\n" + "      ".concat(modalKey, ": false,  // \u2190 \u0434\u043E\u0431\u0430\u0432\u044C \u044D\u0442\u043E\n") + "    }\n" + "  })");
+    return;
+  }
+  // ── /guard ──────────────────────────────────────────────────────────
+
+  var getModalEl = function getModalEl() {
+    return document.getElementById(modalKey);
+  };
+  var getInstance = function getInstance() {
+    var bs = window.bootstrap;
+    if (!bs) return null;
+    var el = getModalEl();
+    return el ? bs.Modal.getInstance(el) || new bs.Modal(el) : null;
+  };
+
+  // Клик — toggle через view.on, делегированный на корень вью
+  var selector = "[w-modal=\"".concat(modalKey, "\"]");
+  var onClick = function onClick(state) {
+    state.modal[modalKey] = !state.modal[modalKey];
+  };
+  view.on('click', selector, onClick);
+
+  // Стейт → Bootstrap
+  var syncToBootstrap = function syncToBootstrap() {
+    var value = rawState.modal[modalKey];
+    var instance = getInstance();
+    if (!instance) return;
+    var modalEl = getModalEl();
+    var isOpen = modalEl === null || modalEl === void 0 ? void 0 : modalEl.classList.contains('show');
+    if (value && !isOpen) instance.show();
+    if (!value && isOpen) instance.hide();
+  };
+  syncToBootstrap();
+
+  // Bootstrap → стейт + хуки Wex
+  var modalEl = getModalEl();
+  var onBsShow = function onBsShow() {
+    rawState.modal[modalKey] = true;
+    view.emit('$modalShow', modalKey);
+  };
+  var onBsShown = function onBsShown() {
+    view.emit('$modalShown', modalKey);
+  };
+  var onBsHide = function onBsHide() {
+    view.emit('$modalHide', modalKey);
+  };
+  var onBsHidden = function onBsHidden() {
+    rawState.modal[modalKey] = false;
+    view.emit('$modalHidden', modalKey);
+  };
+  if (modalEl) {
+    modalEl.addEventListener('show.bs.modal', onBsShow);
+    modalEl.addEventListener('shown.bs.modal', onBsShown);
+    modalEl.addEventListener('hide.bs.modal', onBsHide);
+    modalEl.addEventListener('hidden.bs.modal', onBsHidden);
+  }
+  return function () {
+    view.off('click', selector, onClick);
+    if (modalEl) {
+      modalEl.removeEventListener('show.bs.modal', onBsShow);
+      modalEl.removeEventListener('shown.bs.modal', onBsShown);
+      modalEl.removeEventListener('hide.bs.modal', onBsHide);
+      modalEl.removeEventListener('hidden.bs.modal', onBsHidden);
+    }
+  };
+});
 
 /***/ })
 /******/ ]);
