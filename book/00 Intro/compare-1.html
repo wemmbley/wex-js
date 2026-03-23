@@ -1,0 +1,17 @@
+<body>
+    <template id="app">
+        <div class="num">{{ number }}</div>
+    </template>
+</body>
+
+<script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/wemmbley/wex-js@master/dist/wex.min.js"></script>
+
+<script>
+    $('#app')
+        .state({ number: 0 })
+        .on('click', '.num', state => {
+            state.number = state.number + 1;
+        })
+        .mount()
+</script>

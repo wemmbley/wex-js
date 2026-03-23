@@ -1,0 +1,15 @@
+﻿<body>
+    <template id="app">
+        <input w-bind="mytext">
+        <span>Вы ввели: <b>{{ mytext }}</b></span>
+    </template>
+</body>
+
+<script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/wemmbley/wex-js@master/dist/wex.min.js"></script>
+
+<script>
+    $('#app')
+        .state({ mytext: 'базовый текст из стейта' })
+        .mount()
+</script>

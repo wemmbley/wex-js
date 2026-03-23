@@ -1,0 +1,14 @@
+<body>
+    <template id="app">
+        <div class="title">{{ title }}</div>
+    </template>
+</body>
+
+<script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/wemmbley/wex-js@master/dist/wex.min.js"></script>
+
+<script>
+    $('#app')
+        .state({ title: 'Default Title' })
+        .mount()
+</script>

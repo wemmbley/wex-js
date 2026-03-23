@@ -1,0 +1,69 @@
+<body>
+    <template id="app">
+        <div>
+            <input w-bind="newTodo" placeholder="Новая задача..." />
+            <button w-on="click:addTodo">Добавить</button>
+
+            <div w-for="todo,index in todos traceby todo.id">
+                <span>{{ todo.text }}</span>
+                <button w-on="click:remove(todo.id)">Удалить</button>
+            </div>
+        </div>
+    </template>
+</body>
+
+<script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/wemmbley/wex-js@master/dist/wex.min.js"></script>
+
+<script>
+    // Выбираем элемент для монтирования
+    $('#app')
+
+        // Обьявляем реактивный стейт
+        .state(() => ({
+            newTodo: '',
+            todos: [],
+        }))
+
+        // Кнопка добавить
+        .fn('addTodo', function (state) {
+            // Наш инупт забинжен через w-bind="newTodo", данные сразу тут будут
+            let inputText = state.newTodo.trim()
+
+            let newTodo = {
+                id: Date.now(), // даём уникальный ид
+                text: inputText // заносим сюда текст из инпута
+            }
+
+            state.todos.push(newTodo) // пушим наш новый туду в стейт
+            state.newTodo = '' // очищаем инпут, ведь он забинжен и очистится вместе со стейтом
+        })
+
+        // Кнопка удалить
+        .fn('remove', function (state, id) {
+
+            // формируем список новых тудушек, покаместь пустой
+            let newTodos = []
+
+            // пробегаемся по текущим тудушкам чтобы вычислить все айдишники
+            for (let i = 0; i < state.todos.length; i++) {
+
+                // создаём новую локальную переменную с текущей тудушкой
+                let todo = state.todos[i]
+
+                // проверяем что текущая тудушка из нашей for-крутилки
+                // не равна айдишнику удаляемой тудушки
+                if (todo.id !== id) {
+
+                    // все остальные тудушки кроме текущей удаляемой добавляем в новый список
+                    newTodos.push(todo)
+                }
+            }
+
+            // реактивно обновляем стейт новыми тудушками без той что мы удалили
+            state.todos = newTodos
+        })
+
+        // Монтируем
+        .mount()
+</script>

@@ -1,0 +1,18 @@
+﻿<body>
+    <template id="app">
+        <input w-bind="mytext">
+        <span>Вы ввели: {{ mytext }}</span>
+        <div w-if="mytext === 'фильм'">
+            Вы ввели слово фильм! Тайный блок открыт!
+        </div>
+    </template>
+</body>
+
+<script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/wemmbley/wex-js@master/dist/wex.min.js"></script>
+
+<script>
+    $('#app')
+        .state({ mytext: '' })
+        .mount()
+</script>
