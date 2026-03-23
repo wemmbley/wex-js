@@ -114,6 +114,37 @@ $('#score')
 </script>
 ```
 
+### ☄️ Модалки Bootstrap 5 из коробки с глубокой интеграцией в стейт.
+
+Не забудьте подключить сам Bootstrap 5 перед использованием.
+
+```html 
+<template id="app">
+    <button class="btn btn-primary" w-modal="myModal">Toggle myModal</button>
+</template>
+
+<div id="myModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Моя модалка</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">Просто контент</div>
+        </div>
+    </div>
+</div>
+```
+```js 
+$('#app')
+    .state({
+        modal: { 
+            myModal: false 
+        }
+    })
+    .mount()
+```
+
 За бОльшим количеством примеров обращайтесь в официальную книгу сообщества в папке `book`.
 
 ## API и документация.
