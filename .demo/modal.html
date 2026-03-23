@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+<body>
+    <!-- ─────────────────────────────────────────
+    ПОДХОД 1: $.fn.modal() — чистый jQuery
+    Никакого Wex, работает как Bootstrap 4
+    ───────────────────────────────────────────── -->
+
+    <button id="btn-open" class="btn btn-primary">Открыть</button>
+    <button id="btn-toggle" class="btn btn-secondary">Toggle</button>
+
+    <div id="simpleModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Простая модалка</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">Содержимое</div>
+                <div class="modal-footer">
+                    <button id="btn-close" class="btn btn-secondary">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────
+  ПОДХОД 2: w-modal — полностью декларативный
+
+  - state.modal.myModal и state.modal.confirmModal — флаги
+  - id модалки = ключ в w-modal
+  - w-modal на кнопке = toggle автоматом
+  - кнопки внутри модалки через w-on — всё в шаблоне
+  - хуки $modalShown / $modalHidden получают modalKey
+───────────────────────────────────────────── -->
+
+    <template id="app">
+        <div>
+            <button class="btn btn-primary"  w-modal="myModal">Toggle myModal</button>
+            <button class="btn btn-danger"   w-modal="confirmModal">Удалить запись</button>
+
+            <p>myModal: {{ modal.myModal ? 'открыта' : 'закрыта' }}</p>
+            <p>confirmModal: {{ modal.confirmModal ? 'открыта' : 'закрыта' }}</p>
+            <p w-if="!!lastAction">Последнее: {{ lastAction }}</p>
+        </div>
+    </template>
+
+    <!-- id = ключ w-modal -->
+    <div id="myModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Моя модалка</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">Просто контент</div>
+        </div></div>
+    </div>
+
+    <div id="confirmModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение</h5>
+            </div>
+            <div class="modal-body">Вы уверены?</div>
+            <div class="modal-footer">
+                <!-- w-on — всё декларативно, никакого jQuery снаружи -->
+                <button class="btn btn-danger">Да, удалить</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            </div>
+        </div></div>
+    </div>
+</body>
+<footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+    <script src="../dist/wex.js"></script>
+
+    <!-- ПЕРВЫЙ ПОДХОД -->
+    <script>
+        $('#btn-open').on('click',   () => $('#simpleModal').modal('show'))
+        $('#btn-close').on('click',  () => $('#simpleModal').modal('hide'))
+        $('#btn-toggle').on('click', () => $('#simpleModal').modal('toggle'))
+    </script>
+
+    <!-- ВТОРОЙ ПОДХОД -->
+    <script>
+        $('#app')
+            .state({
+                modal: {
+                    myModal:      false,
+                    confirmModal: false,
+                }
+            })
+            .mount()
+    </script>
+</footer>
+</html>
