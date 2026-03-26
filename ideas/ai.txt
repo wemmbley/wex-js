@@ -1,0 +1,79 @@
+events() — runtime решение через toString()
+Идея: парсим исходник events() прямо в рантайме, вытаскиваем функции, биндим на инстанс.
+jsclass Component {
+    constructor(props) {
+        this._props = props || {};
+        this._bindEvents();
+    }
+
+    _bindEvents() {
+        if (typeof this.events !== 'function') return;
+
+        const src = this.events.toString();
+        const methods = this._extractFunctions(src);
+
+        for (const [name, body] of Object.entries(methods)) {
+            const fn = new Function('$component', body);
+            this[name] = () => fn(this);
+        }
+    }
+
+    _extractFunctions(src) {
+        // Тело events()
+        const bodyStart = src.indexOf('{') + 1;
+        const body = src.slice(bodyStart, src.lastIndexOf('}'));
+
+        const methods = {};
+        const fnRegex = /function\s+(\w+)\s*\(\$component\)/g;
+        let match;
+
+        while ((match = fnRegex.exec(body)) !== null) {
+            const name = match[1];
+            const braceStart = body.indexOf('{', match.index + match[0].length);
+            methods[name] = this._extractBraceContent(body, braceStart);
+        }
+
+        return methods;
+    }
+
+    _extractBraceContent(src, start) {
+        let depth = 0, i = start;
+        let inString = false, stringChar = '';
+
+        while (i < src.length) {
+            const ch = src[i];
+
+            if (inString) {
+                if (ch === '\\') { i += 2; continue; }
+                if (ch === stringChar) inString = false;
+            } else {
+                if (ch === '"' || ch === "'" || ch === '`') {
+                    inString = true;
+                    stringChar = ch;
+                } else if (ch === '{') {
+                    depth++;
+                } else if (ch === '}') {
+                    depth--;
+                    if (depth === 0) return src.slice(start + 1, i);
+                }
+            }
+            i++;
+        }
+        return '';
+    }
+}
+Теперь $component.cancel() работает — метод реально появляется на инстансе.
+
+onClick={$component.cancel()} — компайлер
+Простое правило для транспайлера: если {...} стоит в позиции JSX-атрибута начинающегося на on — оборачивать автоматически:
+js// Видим в JSX-атрибуте:
+onClick={$component.cancel()}
+
+// Транспайлер превращает в:
+onClick={() => $component.cancel()}
+
+// Правило: /on[A-Z]\w+\s*=\s*\{([^}]+\(\))\}/
+// → onXxx={() => $1}
+
+Итого архитектура Jex теперь полностью связна:
+МеханизмРешениеРеактивностьProxy + батч 16мс ✅Events биндингtoString() + new FunctiononClick в рендереПравило компайлера$props / $componentЕдиный контекст ✅
